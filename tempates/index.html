@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sugarcane Disease Detection</title>
+    <style>
+        .main {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1536882240095-0379873feb4e?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1771&q=80');
+            background-size: cover;
+            background-position: center;
+            color: #fff;
+            padding: 50px 0;
+            text-align: center;
+        }
+        .welcome-text h1 {
+            color: #ffe15d;
+            font-size: 60px;
+            text-shadow: 3px 3px black;
+        }
+        .file-upload {
+            margin-top: 30px;
+        }
+        .file-upload label {
+            display: inline-block;
+            color: #ffffff;
+            border: 1px solid #fff;
+            font-size: 18px;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .file-upload label:hover {
+            background: #fff;
+            color: #333;
+        }
+        .file-upload img {
+            margin-top: 20px;
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <div class="welcome-text">
+            <h1>Sugarcane Disease Detection</h1>
+        </div>
+        <div class="file-upload">
+            <form id="uploadForm">
+                <input type="file" name="file" id="fileInput" accept="image/*" onchange="previewImage(event)">
+                <label for="file">Choose an image...</label>
+                <button type="submit">Upload</button>
+            </form>
+            <img id="preview" alt="Image Preview">
+        </div>
+        <div id="result" class="welcome-text"></div>
+    </div>
+    <script>
+        function previewImage(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('preview');
+            const reader = new FileReader();
+
+            reader.onload = function() {
+                preview.src = reader.result;
+            };
+
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = "";
+            }
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const fileInput = document.getElementById('fileInput');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8080/predict', {
+                    method: 'POST',
+                    body: formData,
+                });
+                const result = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <h1>The Sugarcane is classified as: <span style="color:#ffe15d;">${result.class}</span></h1>
+                    <p>Confidence: ${(result.confidence * 100).toFixed(2)}%</p>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<h1 style="color: red;">Error: ${error.message}</h1>`;
+            }
+        });
+    </script>
+</body>
+</html>
